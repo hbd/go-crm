@@ -26,16 +26,17 @@ type Address struct {
 
 var people []Person
 
-func GetClients(w http.ResponseWriter, r *http.Request){
-     db, _ = sql.OpenDB("postgres")
-     query_res := db.Exec(`
-     select * from client`)
-     fmt.Printf("%s\n", query_res)
-     json.NewEncoder(w).Encode(people)
-}
 
-func GetPeople(w http.ResponseWriter, r *http.Request) {
+func GetPeople(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+     err := db.Ping()
+     if err != nil {
+       panic(err)
+     }
+   
+     fmt.Println("Successfully connected!")
+
      json.NewEncoder(w).Encode(people)
+
 }
 func GetPerson(w http.ResponseWriter, r *http.Request) {
      params := mux.Vars(r)
