@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // SQLClient .
@@ -29,9 +30,20 @@ func NewSQLClient() (*SQLClient, error) {
 		creds.Host, creds.Port, creds.User, creds.Dbname)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		panic(err)
+		logrus.WithError(err).Debug("Error initializing a SQL client.")
+		return nil, errors.Wrap(err, "new sql client")
 	}
 	return &SQLClient{db}, nil
+}
+
+// MustNewSQLClient panics if initializing a new SQL Client fails.
+func MustNewSQLClient() *SQLClient {
+	db, err := NewSQLClient()
+	if err != nil {
+		logrus.WithError(err).Fatal("Error initializing new SQL Client.")
+		return nil
+	}
+	return db
 }
 
 // newCredentials returns new credentials.
@@ -77,5 +89,5 @@ func (c *SQLClient) DeletePerson(ctx context.Context, id string) error {
 
 // GetPeople returns everyone in the DB.
 func (c *SQLClient) GetPeople(ctx context.Context) ([]Person, error) {
-	return people, nil
+	return []Person{}, nil
 }

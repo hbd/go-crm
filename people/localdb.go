@@ -14,6 +14,11 @@ func NewLocalDBClient() (*LocalDBClient, error) {
 	return &LocalDBClient{}, nil
 }
 
+// NewLocalDBClient .
+func MustNewLocalDBClient() *LocalDBClient {
+	return &LocalDBClient{}
+}
+
 /*
   General DB.
 */
