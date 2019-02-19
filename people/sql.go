@@ -77,6 +77,11 @@ func (c *SQLClient) GetPerson(ctx context.Context, id string) (Person, error) {
 	return Person{}, nil
 }
 
+// InsertPerson adds a new person to the DB without checking if they exist first.
+func (c *SQLClient) InsertPerson(ctx context.Context, person Person) error {
+	return nil
+}
+
 // UpsertPerson deletes the person with the given ID from the DB.
 func (c *SQLClient) UpsertPerson(ctx context.Context, person Person) error {
 	return nil

@@ -14,7 +14,7 @@ func NewLocalDBClient() (*LocalDBClient, error) {
 	return &LocalDBClient{}, nil
 }
 
-// NewLocalDBClient .
+// MustNewLocalDBClient .
 func MustNewLocalDBClient() *LocalDBClient {
 	return &LocalDBClient{}
 }
@@ -35,12 +35,20 @@ func (c *LocalDBClient) PingDB() error {
 // GetPerson retrieves the person with the given ID from the DB.
 func (c *LocalDBClient) GetPerson(ctx context.Context, id string) (Person, error) {
 	for _, person := range people {
-		return person, nil
+		if person.ID == id {
+			return person, nil
+		}
 	}
 	return Person{}, NewErrNotFound(id)
 }
 
-// UpsertPerson deletes the person with the given ID from the DB.
+// InsertPerson adds a new person to the DB without checking if they exist first.
+func (c *LocalDBClient) InsertPerson(ctx context.Context, person Person) error {
+	people = append(people, person)
+	return nil
+}
+
+// UpsertPerson inserts a person if they exist or updates their existing record.
 func (c *LocalDBClient) UpsertPerson(ctx context.Context, person Person) error {
 	return nil
 }

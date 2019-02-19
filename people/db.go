@@ -8,6 +8,7 @@ type DB interface {
 
 	GetPerson(context.Context, string) (Person, error)
 	DeletePerson(context.Context, string) error
+	InsertPerson(context.Context, Person) error
 	UpsertPerson(context.Context, Person) error
 
 	GetPeople(context.Context) ([]Person, error)

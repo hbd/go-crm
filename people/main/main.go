@@ -34,25 +34,25 @@ func main() {
 		Methods(http.MethodGet)
 
 	router.HandleFunc(
-		"/people/"+people.PathParamID,
+		"/people/{"+people.PathParamID+"}",
 		c.GetPerson).
 		Methods(http.MethodGet)
 
 	router.HandleFunc(
-		"/people/"+people.PathParamID+"/status",
+		"/people/{"+people.PathParamID+"}/status",
 		c.GetStatus).
 		Methods(http.MethodGet)
 
 	router.HandleFunc(
-		"/people/"+people.PathParamID+"/status/"+people.PathParamNewStatus,
+		"/people/{"+people.PathParamID+"}/status/{"+people.PathParamNewStatus+"}",
 		c.SetStatus).
 		Methods(http.MethodPut)
 
-	router.HandleFunc("/people/"+people.PathParamID,
+	router.HandleFunc("/people/{"+people.PathParamID+"}",
 		c.CreatePerson).
 		Methods(http.MethodPost)
 
-	router.HandleFunc("/people/"+people.PathParamID,
+	router.HandleFunc("/people/{"+people.PathParamID+"}",
 		c.DeletePerson).
 		Methods(http.MethodDelete)
 

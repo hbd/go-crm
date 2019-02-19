@@ -5,13 +5,14 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
 // Path parameters.
 const (
-	PathParamID        = "{id}"
-	PathParamNewStatus = "{newstatus}"
+	PathParamID        = "id"
+	PathParamNewStatus = "newstatus"
 )
 
 /*
@@ -33,25 +34,32 @@ func (c *Controller) GetPeople(w http.ResponseWriter, req *http.Request) {
 */
 
 // CreatePerson .
-func (c *Controller) CreatePerson(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
+func (c *Controller) CreatePerson(w http.ResponseWriter, req *http.Request) {
 	var person Person
-	_ = json.NewDecoder(r.Body).Decode(&person)
-	person.ID = params["id"]
-	people = append(people, person)
-	json.NewEncoder(w).Encode(people)
+	if err := json.NewDecoder(req.Body).Decode(&person); err != nil {
+		logrus.WithError(err).Debug("Error decoding person.")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	id, err := getID(w, req)
+	if err != nil {
+		return
+	}
+	person.ID = id
+	if err := c.db.InsertPerson(req.Context(), person); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetPerson .
-func (c *Controller) GetPerson(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, ok := params[PathParamID]
-	if !ok {
-		logrus.Debug("Invalid path param given.")
-		w.WriteHeader(http.StatusBadRequest)
+func (c *Controller) GetPerson(w http.ResponseWriter, req *http.Request) {
+	id, err := getID(w, req)
+	if err != nil {
 		return
 	}
-	person, err := c.db.GetPerson(r.Context(), id)
+	person, err := c.db.GetPerson(req.Context(), id)
 	if err != nil {
 		logrus.WithError(err).WithField("id", id).Debugf("Error when getting person.")
 		switch e := err.(type) {
@@ -112,4 +120,16 @@ func (c *Controller) Healthcheck(w http.ResponseWriter, req *http.Request) {
 	}
 	// Success.
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func getID(w http.ResponseWriter, req *http.Request) (string, error) {
+	params := mux.Vars(req)
+	id, ok := params[PathParamID]
+	if !ok {
+		logrus.Debug("Invalid path param given.")
+		w.WriteHeader(http.StatusBadRequest)
+		return "", errors.New("id not found in path")
+	}
+	logrus.WithField("id", id).Debug("Retrieved ID.")
+	return id, nil
 }
