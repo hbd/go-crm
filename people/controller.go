@@ -1,58 +1,36 @@
 package people
 
 import (
-	"database/sql"
-	"fmt"
+	"os"
 
+	"github.com/aws/aws-sdk-go/aws/session"
 	_ "github.com/lib/pq" // PG Driver.
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // Controller .
 type Controller struct {
-	db *sql.DB
-}
-
-// Credentials .
-type Credentials struct {
-	Host   string
-	Port   int
-	User   string
-	Dbname string
+	aws *session.Session
+	db  DB
 }
 
 // NewController .
-func NewController() *Controller {
+func NewController() (*Controller, error) {
 	var c Controller
 
-	// Open a connection to the DB.
-	creds := newCredentials()
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
-		creds.Host, creds.Port, creds.User, creds.Dbname)
-	db, err := sql.Open("postgres", psqlInfo)
-	if err != nil {
-		panic(err)
-	}
-	c.db = db
+	c.aws = session.Must(session.NewSession())
 
-	return &c
-}
+	if useLocalDB := os.Getenv("LOCAL_DB"); useLocalDB == "true" {
 
-// newCredentials returns new credentials.
-// Pass in configurable credentials from the env?
-func newCredentials() Credentials {
-	return Credentials{
-		Host:   "localhost",
-		Port:   5432,
-		User:   "postgres",
-		Dbname: "crm",
+	} else {
+		db, err := NewSQLClient()
+		if err != nil {
+			logrus.WithError(err).Debug("Error initializing a SQL client.")
+			return &c, errors.Wrap(err, "new sql client")
+		}
+		c.db = db
 	}
-}
 
-// PingDB pings the database.
-func (c *Controller) PingDB() error {
-	if err := c.db.Ping(); err != nil {
-		return errors.Wrap(err, "db ping")
-	}
-	return nil
+	return &c, nil
 }

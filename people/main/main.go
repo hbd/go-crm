@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/hbd/go-crm/people"
+	"github.com/sirupsen/logrus"
 )
 
 /* Test data.
@@ -17,15 +18,43 @@ people = append(people, Person{ID: "3", Firstname: "Francis", Lastname: "Sunday"
 func main() {
 	router := mux.NewRouter()
 
-	c := people.NewController()
+	c, err := people.NewController()
+	if err != nil {
+		logrus.WithError(err).Fatalf("Failed to initialize controller.")
+	}
 
-	router.HandleFunc("/healthcheck", c.Healthcheck).Methods("GET")
-	router.HandleFunc("/people", c.GetPeople).Methods("GET")
-	router.HandleFunc("/people/{id}", c.GetPerson).Methods("GET")
-	router.HandleFunc("/people/{id}/status", c.GetStatus).Methods("GET")
-	router.HandleFunc("/people/{id}/status/{newstatus}", c.SetStatus).Methods("PUT")
-	router.HandleFunc("/people/{id}", c.CreatePerson).Methods("POST")
-	router.HandleFunc("/people/{id}", c.DeletePerson).Methods("DELETE")
+	router.HandleFunc(
+		"/healthcheck",
+		c.Healthcheck).
+		Methods(http.MethodGet)
+
+	router.HandleFunc(
+		"/people",
+		c.GetPeople).
+		Methods(http.MethodGet)
+
+	router.HandleFunc(
+		"/people/"+people.PathParamID,
+		c.GetPerson).
+		Methods(http.MethodGet)
+
+	router.HandleFunc(
+		"/people/"+people.PathParamID+"/status",
+		c.GetStatus).
+		Methods(http.MethodGet)
+
+	router.HandleFunc(
+		"/people/"+people.PathParamID+"/status/"+people.PathParamNewStatus,
+		c.SetStatus).
+		Methods(http.MethodPut)
+
+	router.HandleFunc("/people/"+people.PathParamID,
+		c.CreatePerson).
+		Methods(http.MethodPost)
+
+	router.HandleFunc("/people/"+people.PathParamID,
+		c.DeletePerson).
+		Methods(http.MethodDelete)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
