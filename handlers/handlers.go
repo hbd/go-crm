@@ -1,50 +1,33 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
-
-// Person .
-type Person struct {
-	ID        string   `json:"id,omitempty"`
-	Firstname string   `json:"firstname,omitempty"`
-	Lastname  string   `json:"lastname,omitempty"`
-	Status    string   `json:"status,omitempty"`
-	Address   *Address `json:"address,omitempty"`
-}
-
-// Address .
-type Address struct {
-	City  string `json:"city,omitempty"`
-	State string `json:"state,omitempty"`
-}
 
 var people []Person
 
 // Healthcheck .
-func Healthcheck() {
-	err := db.Ping()
-	if err != nil {
-		panic(err)
+func (c *Controller) Healthcheck(w http.ResponseWriter, req *http.Request) {
+	if err := c.PingDB(); err != nil {
+		// Return error.
+		logrus.WithError(err).Debugf("Failed to ping DB.")
+		w.WriteHeader(http.StatusTeapot)
 	}
+	// Success.
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetPeople .
-func GetPeople(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-
-	fmt.Println("Successfully connected!")
-
-	json.NewEncoder(w).Encode(people)
-
+func (c *Controller) GetPeople(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(&people)
 }
 
 // GetPerson .
-func GetPerson(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetPerson(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	for _, item := range people {
 		if item.ID == params["id"] {
@@ -56,7 +39,7 @@ func GetPerson(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetStatus .
-func GetStatus(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetStatus(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	for _, item := range people {
 		if item.ID == params["id"] {
@@ -68,7 +51,7 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 // SetStatus .
-func SetStatus(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) SetStatus(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	for _, item := range people {
 		if item.ID == params["id"] {
@@ -81,7 +64,7 @@ func SetStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 // CreatePerson .
-func CreatePerson(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) CreatePerson(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var person Person
 	_ = json.NewDecoder(r.Body).Decode(&person)
@@ -91,5 +74,5 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeletePerson .
-func DeletePerson(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) DeletePerson(w http.ResponseWriter, r *http.Request) {
 }
