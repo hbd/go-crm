@@ -5,8 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-
-	"github.com/hbd/go-crm/handlers"
+	"github.com/hbd/go-crm/people"
 )
 
 /* Test data.
@@ -18,7 +17,7 @@ people = append(people, Person{ID: "3", Firstname: "Francis", Lastname: "Sunday"
 func main() {
 	router := mux.NewRouter()
 
-	c := handlers.NewController()
+	c := people.NewController()
 
 	router.HandleFunc("/healthcheck", c.Healthcheck).Methods("GET")
 	router.HandleFunc("/people", c.GetPeople).Methods("GET")

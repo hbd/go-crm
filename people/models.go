@@ -1,4 +1,4 @@
-package handlers
+package people
 
 // Person .
 type Person struct {

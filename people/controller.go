@@ -1,4 +1,4 @@
-package controllers
+package people
 
 import (
 	"database/sql"
