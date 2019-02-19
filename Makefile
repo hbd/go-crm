@@ -11,3 +11,6 @@ clean	        :
 	        rm go-crm
 	        && docker kill pg-docker
 	        && rm *~
+
+run             :
+	        go run ./people/main
