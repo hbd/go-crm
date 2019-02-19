@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/benjamin28/go-crm-fork/handlers"
+	"github.com/hbd/go-crm/handlers"
 )
 
 /* Test data.
